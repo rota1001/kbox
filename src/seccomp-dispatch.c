@@ -1158,12 +1158,12 @@ static struct kbox_dispatch forward_statx(
 }
 
 /* ------------------------------------------------------------------ */
-/* forward_faccessat2                                                 */
+/* forward_faccessat / forward_faccessat2                             */
 /* ------------------------------------------------------------------ */
 
-static struct kbox_dispatch forward_faccessat2(
-    const struct kbox_seccomp_notif *notif,
-    struct kbox_supervisor_ctx *ctx)
+static struct kbox_dispatch do_faccessat(const struct kbox_seccomp_notif *notif,
+                                         struct kbox_supervisor_ctx *ctx,
+                                         long flags)
 {
     pid_t pid = notif->pid;
     long dirfd_raw = to_dirfd_arg(notif->data.args[0]);
@@ -1186,10 +1186,23 @@ static struct kbox_dispatch forward_faccessat2(
         return kbox_dispatch_continue();
 
     long mode = to_c_long_arg(notif->data.args[2]);
-    long flags = to_c_long_arg(notif->data.args[3]);
     long ret =
         kbox_lkl_faccessat2(ctx->sysnrs, lkl_dirfd, translated, mode, flags);
     return kbox_dispatch_from_lkl(ret);
+}
+
+static struct kbox_dispatch forward_faccessat(
+    const struct kbox_seccomp_notif *notif,
+    struct kbox_supervisor_ctx *ctx)
+{
+    return do_faccessat(notif, ctx, 0);
+}
+
+static struct kbox_dispatch forward_faccessat2(
+    const struct kbox_seccomp_notif *notif,
+    struct kbox_supervisor_ctx *ctx)
+{
+    return do_faccessat(notif, ctx, to_c_long_arg(notif->data.args[3]));
 }
 
 /* ------------------------------------------------------------------ */
@@ -1452,12 +1465,12 @@ static struct kbox_dispatch forward_unlinkat(
 }
 
 /* ------------------------------------------------------------------ */
-/* forward_renameat2                                                  */
+/* forward_renameat / forward_renameat2                               */
 /* ------------------------------------------------------------------ */
 
-static struct kbox_dispatch forward_renameat2(
-    const struct kbox_seccomp_notif *notif,
-    struct kbox_supervisor_ctx *ctx)
+static struct kbox_dispatch do_renameat(const struct kbox_seccomp_notif *notif,
+                                        struct kbox_supervisor_ctx *ctx,
+                                        long flags)
 {
     pid_t pid = notif->pid;
     long olddirfd_raw = to_dirfd_arg(notif->data.args[0]);
@@ -1497,10 +1510,23 @@ static struct kbox_dispatch forward_renameat2(
     if (newdirfd < 0 && newdirfd != AT_FDCWD_LINUX)
         return kbox_dispatch_continue();
 
-    long flags = to_c_long_arg(notif->data.args[4]);
     long ret = kbox_lkl_renameat2(ctx->sysnrs, olddirfd, oldtrans, newdirfd,
                                   newtrans, flags);
     return kbox_dispatch_from_lkl(ret);
+}
+
+static struct kbox_dispatch forward_renameat(
+    const struct kbox_seccomp_notif *notif,
+    struct kbox_supervisor_ctx *ctx)
+{
+    return do_renameat(notif, ctx, 0);
+}
+
+static struct kbox_dispatch forward_renameat2(
+    const struct kbox_seccomp_notif *notif,
+    struct kbox_supervisor_ctx *ctx)
+{
+    return do_renameat(notif, ctx, to_c_long_arg(notif->data.args[4]));
 }
 
 /* ------------------------------------------------------------------ */
@@ -3673,6 +3699,8 @@ struct kbox_dispatch kbox_dispatch_syscall(struct kbox_supervisor_ctx *ctx,
         return forward_newfstatat(notif, ctx);
     if (nr == h->statx)
         return forward_statx(notif, ctx);
+    if (nr == h->faccessat && h->faccessat > 0)
+        return forward_faccessat(notif, ctx);
     if (nr == h->faccessat2)
         return forward_faccessat2(notif, ctx);
 
@@ -3686,6 +3714,8 @@ struct kbox_dispatch kbox_dispatch_syscall(struct kbox_supervisor_ctx *ctx,
         return forward_mkdirat(notif, ctx);
     if (nr == h->unlinkat)
         return forward_unlinkat(notif, ctx);
+    if (nr == h->renameat && h->renameat > 0)
+        return forward_renameat(notif, ctx);
     if (nr == h->renameat2)
         return forward_renameat2(notif, ctx);
     if (nr == h->fchmodat)

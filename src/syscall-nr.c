@@ -178,11 +178,13 @@ const struct kbox_host_nrs HOST_NRS_X86_64 = {
     .fstat = 5,
     .newfstatat = 262,
     .statx = 332,
+    .faccessat = 269,
     .faccessat2 = 439,
     .getdents64 = 217,
     .getdents = 78,
     .mkdirat = 258,
     .unlinkat = 263,
+    .renameat = 264,
     .renameat2 = 316,
     .fchmodat = 268,
     .fchownat = 260,
@@ -332,11 +334,13 @@ const struct kbox_host_nrs HOST_NRS_AARCH64 = {
     .fstat = 80,
     .newfstatat = 79,
     .statx = 291,
+    .faccessat = 48,
     .faccessat2 = 439,
     .getdents64 = 61,
     .getdents = -1,
     .mkdirat = 34,
     .unlinkat = 35,
+    .renameat = 38,
     .renameat2 = 276,
     .fchmodat = 53,
     .fchownat = 54,
@@ -555,11 +559,13 @@ const char *syscall_name_from_nr(const struct kbox_host_nrs *h, int nr)
     CHECK(fstat);
     CHECK(newfstatat);
     CHECK(statx);
+    CHECK(faccessat);
     CHECK(faccessat2);
     CHECK(getdents64);
     CHECK(getdents);
     CHECK(mkdirat);
     CHECK(unlinkat);
+    CHECK(renameat);
     CHECK(renameat2);
     CHECK(fchmodat);
     CHECK(fchownat);

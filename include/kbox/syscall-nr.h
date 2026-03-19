@@ -80,9 +80,9 @@ struct kbox_host_nrs {
     int stat, lstat, access;
     int rename, mkdir, rmdir, unlink;
     int chmod, chown;
-    int fstat, newfstatat, statx, faccessat2;
+    int fstat, newfstatat, statx, faccessat, faccessat2;
     int getdents64, getdents;
-    int mkdirat, unlinkat, renameat2;
+    int mkdirat, unlinkat, renameat, renameat2;
     int fchmodat, fchownat;
     int close;
     int sendmsg, socket, connect, bind, listen, accept, accept4;

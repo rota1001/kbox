@@ -3520,7 +3520,7 @@ static struct kbox_dispatch forward_clone3(
         if (ctx->verbose)
             fprintf(stderr,
                     "kbox: clone3 denied -- cannot read clone_args "
-                    "(pid=%d, rc=%d)\n",
+                    "(pid=%u, rc=%d)\n",
                     notif->pid, rc);
         return kbox_dispatch_errno(EPERM);
     }
@@ -3529,7 +3529,7 @@ static struct kbox_dispatch forward_clone3(
         if (ctx->verbose)
             fprintf(stderr,
                     "kbox: clone3 denied -- namespace flags 0x%llx "
-                    "(pid=%d)\n",
+                    "(pid=%u)\n",
                     (unsigned long long) (flags & CLONE_NEW_MASK), notif->pid);
         return kbox_dispatch_errno(EPERM);
     }
@@ -3550,7 +3550,7 @@ struct kbox_dispatch kbox_dispatch_syscall(struct kbox_supervisor_ctx *ctx,
 
     if (ctx->verbose) {
         const char *name = syscall_name_from_nr(h, nr);
-        fprintf(stderr, "seccomp notify: pid=%d nr=%d (%s)\n", notif->pid, nr,
+        fprintf(stderr, "seccomp notify: pid=%u nr=%d (%s)\n", notif->pid, nr,
                 name ? name : "unknown");
     }
 
@@ -3974,7 +3974,7 @@ struct kbox_dispatch kbox_dispatch_syscall(struct kbox_supervisor_ctx *ctx,
             if (ctx->verbose)
                 fprintf(stderr,
                         "kbox: clone denied -- namespace flags 0x%llx "
-                        "(pid=%d)\n",
+                        "(pid=%u)\n",
                         (unsigned long long) (cflags & CLONE_NEW_MASK),
                         notif->pid);
             return kbox_dispatch_errno(EPERM);

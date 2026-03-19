@@ -12,6 +12,9 @@ enum {
     OPT_FORWARD_VERBOSE,
     OPT_MOUNT_PROFILE,
     OPT_NET,
+    OPT_WEB,
+    OPT_WEB_BIND,
+    OPT_TRACE_FORMAT,
     OPT_HELP,
 };
 
@@ -32,6 +35,9 @@ static const struct option image_longopts[] = {
     {"forward-verbose", no_argument, NULL, OPT_FORWARD_VERBOSE},
     {"mount-profile", required_argument, NULL, OPT_MOUNT_PROFILE},
     {"net", no_argument, NULL, OPT_NET},
+    {"web", optional_argument, NULL, OPT_WEB},
+    {"web-bind", required_argument, NULL, OPT_WEB_BIND},
+    {"trace-format", required_argument, NULL, OPT_TRACE_FORMAT},
     {"help", no_argument, NULL, OPT_HELP},
     {NULL, 0, NULL, 0},
 };
@@ -64,6 +70,10 @@ void kbox_usage(const char *argv0)
         "      --forward-verbose      Verbose syscall forwarding\n"
         "      --net                  Enable SLIRP user-mode networking\n"
         "      --mount-profile P      Mount profile: full (default), minimal\n"
+        "      --web[=PORT]           Enable web observatory (default: 8080)\n"
+        "      --web-bind ADDR        Bind address for web (default: "
+        "127.0.0.1)\n"
+        "      --trace-format FMT     Trace output format (json)\n"
         "      --help                 Show this help\n",
         argv0);
 }
@@ -162,6 +172,50 @@ static int parse_image_args(int argc,
             fprintf(stderr,
                     "error: --net requires SLIRP support "
                     "(rebuild with KBOX_HAS_SLIRP=1)\n");
+            return -1;
+#endif
+            break;
+        case OPT_WEB:
+#ifdef KBOX_HAS_WEB
+            img->web = true;
+            if (optarg) {
+                char *end;
+                unsigned long v = strtoul(optarg, &end, 10);
+                if (*end != '\0' || v == 0 || v > 65535) {
+                    fprintf(stderr, "invalid web port: %s\n", optarg);
+                    return -1;
+                }
+                img->web_port = (int) v;
+            }
+#else
+            fprintf(stderr,
+                    "error: --web requires web support "
+                    "(rebuild with KBOX_HAS_WEB=1)\n");
+            return -1;
+#endif
+            break;
+        case OPT_WEB_BIND:
+#ifdef KBOX_HAS_WEB
+            img->web_bind = optarg;
+#else
+            fprintf(stderr,
+                    "error: --web-bind requires web support "
+                    "(rebuild with KBOX_HAS_WEB=1)\n");
+            return -1;
+#endif
+            break;
+        case OPT_TRACE_FORMAT:
+#ifdef KBOX_HAS_WEB
+            if (strcmp(optarg, "json") != 0) {
+                fprintf(stderr, "unknown trace format: %s (use 'json')\n",
+                        optarg);
+                return -1;
+            }
+            img->trace_format = optarg;
+#else
+            fprintf(stderr,
+                    "error: --trace-format requires web support "
+                    "(rebuild with KBOX_HAS_WEB=1)\n");
             return -1;
 #endif
             break;

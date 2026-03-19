@@ -13,6 +13,9 @@
 #include "kbox/fd-table.h"
 #include "kbox/seccomp.h"
 #include "kbox/syscall-nr.h"
+#ifdef KBOX_HAS_WEB
+#include "kbox/web.h"
+#endif
 
 #include <errno.h>
 /* seccomp types via kbox/seccomp.h -> kbox/seccomp-defs.h */
@@ -262,8 +265,14 @@ static int supervise_loop(struct kbox_supervisor_ctx *ctx)
             fprintf(stderr, "poll(listener): %s\n", strerror(errno));
             return -1;
         }
-        if (ret == 0)
+        if (ret == 0) {
+#ifdef KBOX_HAS_WEB
+            /* Timer-driven telemetry sampling on poll timeout. */
+            if (ctx->web)
+                kbox_web_tick(ctx->web);
+#endif
             continue;
+        }
 
         /* 3. POLLHUP / POLLERR => recheck child. */
         if (pfd.revents & (POLLHUP | POLLERR | POLLNVAL)) {
@@ -277,18 +286,51 @@ static int supervise_loop(struct kbox_supervisor_ctx *ctx)
         ret = kbox_notify_recv(ctx->listener_fd, &notif);
         if (ret < 0) {
             int e = -ret;
-            if (e == EINTR || e == EAGAIN || e == ENOENT)
+            if (e == EINTR || e == EAGAIN || e == ENOENT) {
+#ifdef KBOX_HAS_WEB
+                if (e == ENOENT && ctx->web)
+                    kbox_web_counters(ctx->web)->recv_enoent++;
+#endif
                 continue;
+            }
             fprintf(stderr, "kbox_notify_recv: %s\n", strerror(e));
             return -1;
         }
 
-        /* 5. Dispatch to LKL. */
+        /* 5. Dispatch to LKL (with optional latency measurement). */
+#ifdef KBOX_HAS_WEB
+        uint64_t t_dispatch_start = 0;
+        if (ctx->web)
+            t_dispatch_start = kbox_clock_ns();
+#endif
         d = kbox_dispatch_syscall(ctx, &notif);
 
         /* 6. Build and send response. */
         build_response(&resp, notif.id, &d);
         ret = kbox_notify_send(ctx->listener_fd, &resp);
+
+#ifdef KBOX_HAS_WEB
+        /* Record telemetry after send (includes full round-trip). */
+        if (ctx->web) {
+            uint64_t latency = kbox_clock_ns() - t_dispatch_start;
+
+            enum kbox_disposition disp;
+            if (d.kind == KBOX_DISPATCH_CONTINUE)
+                disp = KBOX_DISP_CONTINUE;
+            else if (d.error == ENOSYS)
+                disp = KBOX_DISP_ENOSYS;
+            else
+                disp = KBOX_DISP_RETURN;
+
+            const char *sname =
+                syscall_name_from_nr(ctx->host_nrs, notif.data.nr);
+
+            kbox_web_record_syscall(ctx->web, notif.pid, notif.data.nr, sname,
+                                    notif.data.args, disp, d.val, d.error,
+                                    latency);
+        }
+#endif
+
         if (ret < 0) {
             int e = -ret;
             /*
@@ -298,8 +340,13 @@ static int supervise_loop(struct kbox_supervisor_ctx *ctx)
              * Both are harmless -- loop around, waitpid picks
              * up the exit.
              */
-            if (e == ENOENT || e == EBADF)
+            if (e == ENOENT || e == EBADF) {
+#ifdef KBOX_HAS_WEB
+                if (e == ENOENT && ctx->web)
+                    kbox_web_counters(ctx->web)->send_enoent++;
+#endif
                 continue;
+            }
             fprintf(stderr, "kbox_notify_send: %s\n", strerror(e));
             return -1;
         }
@@ -318,7 +365,8 @@ int kbox_run_supervisor(const struct kbox_sysnrs *sysnrs,
                         int exec_memfd,
                         int verbose,
                         int root_identity,
-                        int normalize)
+                        int normalize,
+                        struct kbox_web_ctx *web)
 {
     int sp[2]; /* socketpair */
     pid_t pid;
@@ -478,6 +526,7 @@ int kbox_run_supervisor(const struct kbox_sysnrs *sysnrs,
     ctx.override_uid = (uid_t) -1;
     ctx.override_gid = (gid_t) -1;
     ctx.normalize = normalize;
+    ctx.web = web;
 
     /* 4c. Enter supervisor loop. */
     exit_code = supervise_loop(&ctx);

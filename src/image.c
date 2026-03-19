@@ -18,6 +18,9 @@
 #include "kbox/probe.h"
 #include "kbox/seccomp.h"
 #include "kbox/shadow-fd.h"
+#ifdef KBOX_HAS_WEB
+#include "kbox/web.h"
+#endif
 
 #include <errno.h>
 #include <fcntl.h>
@@ -201,6 +204,28 @@ int kbox_run_image(const struct kbox_image_args *args)
             return -1;
     }
 
+    /* --- Web observatory (optional) --- */
+    struct kbox_web_ctx *web_ctx = NULL;
+#ifdef KBOX_HAS_WEB
+    if (args->web || args->trace_format) {
+        struct kbox_web_config wcfg;
+        memset(&wcfg, 0, sizeof(wcfg));
+        wcfg.enable_web = args->web;
+        wcfg.port = args->web_port;
+        wcfg.bind = args->web_bind;
+        wcfg.guest_name = command;
+        if (args->trace_format) {
+            wcfg.enable_trace = 1;
+            wcfg.trace_fd = STDERR_FILENO;
+        }
+        web_ctx = kbox_web_init(&wcfg, sysnrs);
+        if (!web_ctx) {
+            fprintf(stderr, "warning: failed to initialize web observatory\n");
+            /* Non-fatal: continue without telemetry */
+        }
+    }
+#endif
+
     /*
      * --- Extract binary from LKL into memfd ---
      *
@@ -335,12 +360,16 @@ int kbox_run_image(const struct kbox_image_args *args)
         rc = kbox_run_supervisor(
             sysnrs, command, args->extra_args, args->extra_argc, NULL,
             exec_memfd, args->verbose, args->root_id || args->system_root,
-            args->normalize);
+            args->normalize, web_ctx);
         if (interp_memfd >= 0)
             close(interp_memfd);
         close(exec_memfd);
 
     err_net:
+#ifdef KBOX_HAS_WEB
+        if (web_ctx)
+            kbox_web_shutdown(web_ctx);
+#endif
         if (args->net)
             kbox_net_cleanup();
         return rc;

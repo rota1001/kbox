@@ -34,6 +34,8 @@ struct kbox_dispatch {
  * Supervisor context.  Replaces 9+ parameter function signatures
  * from the Rust code.
  */
+struct kbox_web_ctx; /* forward declaration */
+
 struct kbox_supervisor_ctx {
     const struct kbox_sysnrs *sysnrs;
     const struct kbox_host_nrs *host_nrs;
@@ -46,6 +48,7 @@ struct kbox_supervisor_ctx {
     uid_t override_uid;
     gid_t override_gid;
     int normalize;
+    struct kbox_web_ctx *web; /* NULL if telemetry disabled */
 };
 
 /* --- BPF filter (seccomp-bpf.c) --- */
@@ -103,7 +106,8 @@ int kbox_run_supervisor(const struct kbox_sysnrs *sysnrs,
                         int exec_memfd,
                         int verbose,
                         int root_identity,
-                        int normalize);
+                        int normalize,
+                        struct kbox_web_ctx *web);
 
 /* I/O chunk size for forwarding read/write through LKL. */
 #define KBOX_IO_CHUNK_LEN (128 * 1024)

@@ -33,6 +33,12 @@ ifdef KBOX_HAS_SLIRP
   SLIRP_OBJS = $(SLIRP_SRCS:.c=.o)
 endif
 
+# Optional: Web observatory (set KBOX_HAS_WEB=1 to enable)
+ifdef KBOX_HAS_WEB
+  CFLAGS    += -DKBOX_HAS_WEB
+  WEB_ASSET_SRC = $(SRC_DIR)/web-assets.c
+endif
+
 # Source files
 SRC_DIR  = src
 SRCS     = $(SRC_DIR)/main.c \
@@ -53,7 +59,14 @@ SRCS     = $(SRC_DIR)/main.c \
            $(SRC_DIR)/shadow-fd.c \
            $(SRC_DIR)/seccomp-dispatch.c \
            $(SRC_DIR)/seccomp-supervisor.c \
-           $(SRC_DIR)/net-slirp.c
+           $(SRC_DIR)/net-slirp.c \
+           $(SRC_DIR)/web-telemetry.c \
+           $(SRC_DIR)/web-events.c \
+           $(SRC_DIR)/web-server.c
+
+ifdef KBOX_HAS_WEB
+  SRCS    += $(WEB_ASSET_SRC)
+endif
 
 ifdef KBOX_HAS_SLIRP
   SRCS    += $(SLIRP_SRCS)
@@ -97,7 +110,7 @@ ROOTFS       = alpine.ext4
 
 # ---- Top-level targets ----
 
-.PHONY: all clean check check-unit check-integration check-stress guest-bins stress-bins rootfs fetch-lkl install-hooks
+.PHONY: all clean check check-unit check-integration check-stress guest-bins stress-bins rootfs fetch-lkl install-hooks web-assets
 
 all: $(TARGET)
 ifneq ($(wildcard .git),)
@@ -177,9 +190,18 @@ install-hooks:
 	    fi; \
 	done
 
+# Generate compiled-in web assets from web/ directory.
+# Re-run when any web/ file changes.
+ifdef KBOX_HAS_WEB
+WEB_SRCS_ALL = $(shell find web -type f \( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.svg' \) 2>/dev/null)
+$(WEB_ASSET_SRC): $(WEB_SRCS_ALL) scripts/gen-web-assets.sh
+	./scripts/gen-web-assets.sh
+web-assets: $(WEB_ASSET_SRC)
+endif
+
 clean:
 	rm -f $(OBJS) $(TARGET) $(TEST_TARGET) $(TEST_DIR)/*.o
-	rm -f src/*.o
+	rm -f src/*.o src/web-assets.c
 	rm -f $(GUEST_BINS) $(STRESS_BINS)
 
 # ---- Dependencies ----
@@ -194,3 +216,6 @@ $(SRC_DIR)/seccomp-supervisor.o: include/kbox/seccomp.h include/kbox/seccomp-def
 $(SRC_DIR)/seccomp-bpf.o: include/kbox/seccomp.h include/kbox/seccomp-defs.h include/kbox/syscall-nr.h
 $(SRC_DIR)/seccomp-notify.o: include/kbox/seccomp.h include/kbox/seccomp-defs.h
 $(SRC_DIR)/net-slirp.o: include/kbox/net.h include/kbox/lkl-wrap.h include/kbox/syscall-nr.h
+$(SRC_DIR)/web-telemetry.o: include/kbox/web.h include/kbox/lkl-wrap.h include/kbox/syscall-nr.h
+$(SRC_DIR)/web-events.o: include/kbox/web.h
+$(SRC_DIR)/web-server.o: include/kbox/web.h include/kbox/fd-table.h include/kbox/lkl-wrap.h include/kbox/syscall-nr.h

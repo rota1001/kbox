@@ -649,11 +649,11 @@ const char *syscall_name_from_nr(const struct kbox_host_nrs *h, int nr)
     CHECK(linkat);
     CHECK(utimensat);
     CHECK(ioctl);
-    CHECK(syslog);
     CHECK(umask);
     CHECK(uname);
     CHECK(brk);
     CHECK(getrandom);
+    CHECK(syslog);
     CHECK(prctl);
     CHECK(wait4);
     CHECK(waitid);

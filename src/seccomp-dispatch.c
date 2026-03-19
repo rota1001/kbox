@@ -48,44 +48,6 @@ static inline long to_dirfd_arg(uint64_t v)
 }
 
 /* ------------------------------------------------------------------ */
-/* Stat ABI conversion                                                */
-/* ------------------------------------------------------------------ */
-
-/*
- * Convert LKL's generic-arch stat layout to the host's struct stat.
- *
- * LKL always fills stat buffers using the asm-generic layout regardless
- * of the host architecture.  On x86_64 the two layouts differ:
- *   generic: st_mode (u32) at offset 16, st_nlink (u32) at offset 20
- *   x86_64:  st_nlink (u64) at offset 16, st_mode (u32) at offset 24
- *
- * On aarch64 the kernel uses the generic layout, but the C library's
- * struct stat may still have different padding, so convert explicitly
- * on all architectures.
- */
-static void kbox_lkl_stat_to_host(const struct kbox_lkl_stat *src,
-                                  struct stat *dst)
-{
-    memset(dst, 0, sizeof(*dst));
-    dst->st_dev = (dev_t) src->st_dev;
-    dst->st_ino = (ino_t) src->st_ino;
-    dst->st_mode = (mode_t) src->st_mode;
-    dst->st_nlink = (nlink_t) src->st_nlink;
-    dst->st_uid = (uid_t) src->st_uid;
-    dst->st_gid = (gid_t) src->st_gid;
-    dst->st_rdev = (dev_t) src->st_rdev;
-    dst->st_size = (off_t) src->st_size;
-    dst->st_blksize = (blksize_t) src->st_blksize;
-    dst->st_blocks = (blkcnt_t) src->st_blocks;
-    dst->st_atim.tv_sec = (time_t) src->st_atime_sec;
-    dst->st_atim.tv_nsec = (long) src->st_atime_nsec;
-    dst->st_mtim.tv_sec = (time_t) src->st_mtime_sec;
-    dst->st_mtim.tv_nsec = (long) src->st_mtime_nsec;
-    dst->st_ctim.tv_sec = (time_t) src->st_ctime_sec;
-    dst->st_ctim.tv_nsec = (long) src->st_ctime_nsec;
-}
-
-/* ------------------------------------------------------------------ */
 /* Open-flag ABI translation (aarch64 host <-> asm-generic LKL)       */
 /* ------------------------------------------------------------------ */
 
@@ -155,6 +117,44 @@ static inline long lkl_to_host_open_flags(long flags)
 }
 
 #endif
+
+/* ------------------------------------------------------------------ */
+/* Stat ABI conversion                                                */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Convert LKL's generic-arch stat layout to the host's struct stat.
+ *
+ * LKL always fills stat buffers using the asm-generic layout regardless
+ * of the host architecture.  On x86_64 the two layouts differ:
+ *   generic: st_mode (u32) at offset 16, st_nlink (u32) at offset 20
+ *   x86_64:  st_nlink (u64) at offset 16, st_mode (u32) at offset 24
+ *
+ * On aarch64 the kernel uses the generic layout, but the C library's
+ * struct stat may still have different padding, so convert explicitly
+ * on all architectures.
+ */
+static void kbox_lkl_stat_to_host(const struct kbox_lkl_stat *src,
+                                  struct stat *dst)
+{
+    memset(dst, 0, sizeof(*dst));
+    dst->st_dev = (dev_t) src->st_dev;
+    dst->st_ino = (ino_t) src->st_ino;
+    dst->st_mode = (mode_t) src->st_mode;
+    dst->st_nlink = (nlink_t) src->st_nlink;
+    dst->st_uid = (uid_t) src->st_uid;
+    dst->st_gid = (gid_t) src->st_gid;
+    dst->st_rdev = (dev_t) src->st_rdev;
+    dst->st_size = (off_t) src->st_size;
+    dst->st_blksize = (blksize_t) src->st_blksize;
+    dst->st_blocks = (blkcnt_t) src->st_blocks;
+    dst->st_atim.tv_sec = (time_t) src->st_atime_sec;
+    dst->st_atim.tv_nsec = (long) src->st_atime_nsec;
+    dst->st_mtim.tv_sec = (time_t) src->st_mtime_sec;
+    dst->st_mtim.tv_nsec = (long) src->st_mtime_nsec;
+    dst->st_ctim.tv_sec = (time_t) src->st_ctime_sec;
+    dst->st_ctim.tv_nsec = (long) src->st_ctime_nsec;
+}
 
 /* ------------------------------------------------------------------ */
 /* Dispatch result constructors                                       */

@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * Guest test: verify that path traversal attempts are confined.
+/* Guest test: verify that path traversal attempts are confined.
  * When running inside kbox's LKL-backed chroot, paths like /../../../
  * should not escape the guest filesystem boundary.
  */
@@ -44,7 +43,7 @@ int main(void)
                   "guest /etc/passwd contains root");
         }
     }
-    /* If open fails, that's also fine -- no escape occurred. */
+    /* If open fails, that is also fine: no escape occurred. */
 
     /* Verify /proc/self/cwd points to / */
     char link[256] = {0};
@@ -58,8 +57,8 @@ int main(void)
     rc = symlink("/../../../../tmp", "/tmp/escape_link");
     if (rc == 0) {
         struct stat st;
-        rc = stat("/tmp/escape_link", &st);
-        /* Whether it resolves or fails, we're still inside kbox. */
+        (void) stat("/tmp/escape_link", &st);
+        /* Whether it resolves or fails, we are still inside kbox. */
         unlink("/tmp/escape_link");
     }
 

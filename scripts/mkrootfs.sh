@@ -25,8 +25,8 @@ STAGING=""
 ALPINE_VERSION="3.21"
 if [ -z "${ALPINE_ARCH:-}" ]; then
     case "$(uname -m)" in
-        aarch64|arm64) ALPINE_ARCH="aarch64" ;;
-        x86_64|amd64)  ALPINE_ARCH="x86_64" ;;
+        aarch64 | arm64) ALPINE_ARCH="aarch64" ;;
+        x86_64 | amd64) ALPINE_ARCH="x86_64" ;;
         *) die "Unsupported host architecture: $(uname -m). Set ALPINE_ARCH explicitly." ;;
     esac
 fi
@@ -34,12 +34,14 @@ ALPINE_TARBALL="alpine-minirootfs-${ALPINE_VERSION}.0-${ALPINE_ARCH}.tar.gz"
 ALPINE_URL="https://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION}/releases/${ALPINE_ARCH}/${ALPINE_TARBALL}"
 ALPINE_SHA256_FILE="scripts/alpine-sha256.txt"
 
-die() {
+die()
+{
     echo "error: $*" >&2
     exit 1
 }
 
-cleanup() {
+cleanup()
+{
     if [ -n "$STAGING" ] && [ -d "$STAGING" ]; then
         rm -rf "$STAGING"
     fi

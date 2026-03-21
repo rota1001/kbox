@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * web-events.c - Event ring buffer for the web observatory.
+/* web-events.c - Event ring buffer for the web observatory.
  *
  * Split ring: 768 entries for sampled routine events, 256 reserved
  * for errors/cancellations.  Tail-based sampling: all errors and
@@ -25,8 +24,7 @@ void kbox_event_ring_init(struct kbox_event_ring *ring)
     memset(ring, 0, sizeof(*ring));
 }
 
-/*
- * Push a routine event (sampled).
+/* Push a routine event (sampled).
  * Overwrites oldest routine entry when full.
  */
 static void ring_push_routine(struct kbox_event_ring *ring,
@@ -38,8 +36,7 @@ static void ring_push_routine(struct kbox_event_ring *ring,
     ring->routine_head = (idx + 1) % KBOX_EVENT_RING_ROUTINE;
 }
 
-/*
- * Push an error/rare event (always captured).
+/* Push an error/rare event (always captured).
  * Overwrites oldest error entry when full.
  */
 static void ring_push_error(struct kbox_event_ring *ring,
@@ -64,8 +61,7 @@ static uint32_t xorshift32(uint32_t *state)
     return x;
 }
 
-/*
- * Returns 1 if this event should be recorded (passes sampling filter).
+/* Returns 1 if this event should be recorded (passes sampling filter).
  *
  * Policy:
  *   - Errors (negative return, nonzero error): always record
@@ -134,8 +130,7 @@ void kbox_event_push_syscall(struct kbox_event_ring *ring,
 
 /* JSON string escaping. */
 
-/*
- * Escape a string for safe JSON embedding.
+/* Escape a string for safe JSON embedding.
  * Handles: " \ and control characters (< 0x20).
  * Returns bytes written (not including NUL).
  */
@@ -194,8 +189,7 @@ int kbox_event_to_json(const struct kbox_event *evt, char *buf, int bufsz)
     return 0;
 }
 
-/*
- * Iterate events from a given sequence number.
+/* Iterate events from a given sequence number.
  * Calls cb for each event with seq >= from_seq.
  * Returns the next sequence number to use.
  */
@@ -205,8 +199,7 @@ uint64_t kbox_event_ring_iterate(const struct kbox_event_ring *ring,
                                             void *userdata),
                                  void *userdata)
 {
-    /*
-     * Scan all slots, emit those with seq > from_seq.
+    /* Scan all slots, emit those with seq > from_seq.
      * O(1024) but only runs on SSE client reads, not the hot path.
      */
     for (int i = 0; i < KBOX_EVENT_RING_SIZE; i++) {

@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * Guest test: verify clock_gettime and gettimeofday return plausible values.
+/* Guest test: verify clock_gettime and gettimeofday return plausible values.
  */
 #include <stdio.h>
 #include <stdlib.h>

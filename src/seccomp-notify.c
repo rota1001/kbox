@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * seccomp-notify.c - ioctl wrappers for seccomp user notifications.
+/* seccomp-notify.c - ioctl wrappers for seccomp user notifications.
  *
  * Thin wrappers around the three seccomp-unotify ioctls:
  *   SECCOMP_IOCTL_NOTIF_RECV   - receive a notification

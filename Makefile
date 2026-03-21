@@ -109,7 +109,7 @@ ROOTFS       = alpine.ext4
 
 # ---- Top-level targets ----
 
-.PHONY: all clean check check-unit check-integration check-stress guest-bins stress-bins rootfs fetch-lkl fetch-minislirp install-hooks web-assets
+.PHONY: all clean check check-unit check-integration check-stress guest-bins stress-bins rootfs fetch-lkl fetch-minislirp install-hooks web-assets indent
 
 all: $(TARGET)
 ifneq ($(wildcard .git),)
@@ -216,6 +216,29 @@ $(WEB_ASSET_SRC): $(WEB_SRCS_ALL) scripts/gen-web-assets.sh
 	./scripts/gen-web-assets.sh
 web-assets: $(WEB_ASSET_SRC)
 endif
+
+# ---- Formatting ----
+
+CLANG_FORMAT := $(shell command -v clang-format-20 2>/dev/null || \
+                        command -v clang-format 2>/dev/null)
+SHFMT        := shfmt
+BLACK        := black
+
+C_SRCS_FMT  := $(wildcard src/*.c src/*.h include/kbox/*.h \
+                tests/unit/*.c tests/unit/*.h \
+                tests/guest/*.c tests/stress/*.c)
+SH_SRCS_FMT := $(wildcard scripts/*.sh)
+PY_SRCS_FMT := $(wildcard scripts/gdb/*.py)
+
+indent:
+ifeq ($(CLANG_FORMAT),)
+	$(error clang-format not found; install clang-format or clang-format-20)
+endif
+	@$(CLANG_FORMAT) --version | grep -q 'version 20' || \
+	  { echo "error: clang-format version 20 required"; exit 1; }
+	$(CLANG_FORMAT) -i $(C_SRCS_FMT)
+	$(SHFMT) -i 4 -fn -ci -sr -bn -w $(SH_SRCS_FMT)
+	$(BLACK) -q $(PY_SRCS_FMT)
 
 clean:
 	rm -f $(OBJS) $(TARGET) $(TEST_TARGET) $(TEST_DIR)/*.o

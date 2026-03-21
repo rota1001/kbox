@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * Stress test: open files until EMFILE/ENFILE, verify graceful handling,
+/* Stress test: open files until EMFILE/ENFILE, verify graceful handling,
  * then close all and verify FDs are reusable.
  *
  * Compiled statically, runs inside kbox guest.
@@ -28,8 +27,7 @@ int main(void)
     int count = 0;
     int i;
 
-    /*
-     * Phase 1: open files until we hit the limit.
+    /* Phase 1: open files until we hit the limit.
      * Use /dev/null as the target -- it always exists and does not
      * consume real storage.
      */
@@ -47,16 +45,14 @@ int main(void)
     printf("fd_exhaust: opened %d fds before limit\n", count);
     CHECK(count > 0, "should open at least one fd");
 
-    /*
-     * Phase 2: close all opened FDs.
+    /* Phase 2: close all opened FDs.
      */
     for (i = 0; i < count; i++) {
         int rc = close(fds[i]);
         CHECK(rc == 0, "close should succeed");
     }
 
-    /*
-     * Phase 3: verify FDs are reusable after closing.
+    /* Phase 3: verify FDs are reusable after closing.
      * Open a handful of files to confirm the table freed up.
      */
     int reuse_count = (count < 10) ? count : 10;
@@ -69,8 +65,7 @@ int main(void)
 
     printf("fd_exhaust: reused %d fds after close\n", reuse_count);
 
-    /*
-     * Phase 4: verify double-close returns EBADF, not crash.
+    /* Phase 4: verify double-close returns EBADF, not crash.
      */
     int tmp_fd = open("/dev/null", O_RDONLY);
     CHECK(tmp_fd >= 0, "open for double-close test");

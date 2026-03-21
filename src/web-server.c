@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * web-server.c - Embedded HTTP/1.1 server for the web observatory.
+/* web-server.c - Embedded HTTP/1.1 server for the web observatory.
  *
  * Minimal server supporting:
  *   GET /            -> SPA (compiled-in assets, Phase 2)
@@ -130,8 +129,7 @@ static int parse_request_line(const char *line, struct http_request *req)
 
 /* HTTP responses. */
 
-/*
- * Write all bytes to fd, handling partial writes.
+/* Write all bytes to fd, handling partial writes.
  * Temporarily sets the fd to blocking mode for reliable delivery.
  */
 static void write_all(int fd, const void *buf, size_t len)
@@ -234,8 +232,7 @@ static int start_sse(struct kbox_web_ctx *ctx, int fd)
     if (write(fd, hdr, strlen(hdr)) < 0)
         return -1;
 
-    /*
-     * Remove the FD from epoll; SSE connections are managed
+    /* Remove the FD from epoll; SSE connections are managed
      * exclusively by flush_sse_clients(), not the main read loop.
      * This prevents the main loop from closing the FD on a
      * subsequent read event (which could reuse the FD number).
@@ -322,8 +319,7 @@ static const char *content_type_for(const char *path)
 
 /* Route dispatch. */
 
-/*
- * Handle a single HTTP request.
+/* Handle a single HTTP request.
  * Returns 0 if the connection should be closed, 1 if kept alive (SSE).
  */
 static int handle_request(struct kbox_web_ctx *ctx,

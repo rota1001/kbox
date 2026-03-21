@@ -731,8 +731,7 @@ static struct kbox_dispatch forward_write(
 
 /* forward_sendfile. */
 
-/*
- * Emulate sendfile(out_fd, in_fd, *offset, count).
+/* Emulate sendfile(out_fd, in_fd, *offset, count).
  *
  * If both FDs are host-visible (shadow memfds, stdio, or other host FDs
  * not in the virtual table), let the host kernel handle it via CONTINUE.
@@ -753,8 +752,7 @@ static struct kbox_dispatch forward_sendfile(
     long in_lkl = kbox_fd_table_get_lkl(ctx->fd_table, in_fd);
     long out_lkl = kbox_fd_table_get_lkl(ctx->fd_table, out_fd);
 
-    /*
-     * Resolve shadow FDs: if in_fd is a host FD injected via ADDFD (shadow
+    /* Resolve shadow FDs: if in_fd is a host FD injected via ADDFD (shadow
      * memfd), find_by_host_fd locates the virtual entry that holds the LKL
      * FD for the same file.
      */
@@ -769,15 +767,13 @@ static struct kbox_dispatch forward_sendfile(
             out_lkl = kbox_fd_table_get_lkl(ctx->fd_table, vfd);
     }
 
-    /*
-     * Both FDs are host-visible (shadow memfds, stdio, pipes, etc.) and
+    /* Both FDs are host-visible (shadow memfds, stdio, pipes, etc.) and
      * neither has LKL backing.  The host kernel handles sendfile.
      */
     if (in_lkl < 0 && out_lkl < 0)
         return kbox_dispatch_continue();
 
-    /*
-     * At least one FD is virtual/LKL-backed: emulate via read + write.
+    /* At least one FD is virtual/LKL-backed: emulate via read + write.
      * Source must have an LKL FD for emulation.
      */
     if (in_lkl < 0)
@@ -841,8 +837,7 @@ static struct kbox_dispatch forward_sendfile(
                 break;
             }
         } else {
-            /*
-             * Destination is a host FD (e.g. stdout).  The supervisor
+            /* Destination is a host FD (e.g. stdout).  The supervisor
              * shares the FD table with the tracee (from fork), so write()
              * goes to the same file description.
              */
@@ -1138,8 +1133,7 @@ static struct kbox_dispatch forward_dup2(const struct kbox_seccomp_notif *notif,
                 }
             }
         }
-        /*
-         * oldfd is a host FD.  If newfd has a stale LKL redirect (from
+        /* oldfd is a host FD.  If newfd has a stale LKL redirect (from
          * a previous dup2), clean it up before the host kernel overwrites
          * the FD.  Without this, the shell's dup2(saved_stdout, 1) leaves
          * a stale low_fds entry that traps all subsequent writes to FD 1
@@ -1175,8 +1169,7 @@ static struct kbox_dispatch forward_dup2(const struct kbox_seccomp_notif *notif,
     if (oldfd == newfd)
         return kbox_dispatch_value((int64_t) newfd);
 
-    /*
-     * Dup first, then close the old mapping.  This preserves the old newfd
+    /* Dup first, then close the old mapping.  This preserves the old newfd
      * if the dup fails (e.g. EMFILE), matching dup2 atomicity semantics.
      */
     long ret = kbox_lkl_dup(ctx->sysnrs, lkl_old);
@@ -2631,8 +2624,7 @@ static struct kbox_dispatch forward_sendto(
     return kbox_dispatch_from_lkl(ret);
 }
 
-/*
- * forward_recvfrom: for shadow sockets, receive data + source address from
+/* forward_recvfrom: for shadow sockets, receive data + source address from
  * the LKL socket and write them back to the tracee.
  *
  * recvfrom(fd, buf, len, flags, src_addr, addrlen)
@@ -2702,8 +2694,7 @@ static struct kbox_dispatch forward_recvfrom(
     return kbox_dispatch_value(ret);
 }
 
-/*
- * forward_recvmsg: intercept for shadow sockets so that msg_name (source
+/* forward_recvmsg: intercept for shadow sockets so that msg_name (source
  * address) is populated from the LKL socket, not the AF_UNIX socketpair.
  *
  * recvmsg(fd, msg, flags)
@@ -2867,8 +2858,7 @@ static struct kbox_dispatch forward_gettimeofday(
     uint64_t remote_tv = notif->data.args[0];
     uint64_t remote_tz = notif->data.args[1];
 
-    /*
-     * Use clock_gettime(CLOCK_REALTIME) as the underlying source, which
+    /* Use clock_gettime(CLOCK_REALTIME) as the underlying source, which
      * works on both x86_64 and aarch64.
      */
     if (remote_tv != 0) {
@@ -2968,8 +2958,7 @@ static struct kbox_dispatch forward_pipe2(
     if (remote_pipefd == 0)
         return kbox_dispatch_errno(EFAULT);
 
-    /*
-     * Create a real host pipe and inject both ends into the tracee via
+    /* Create a real host pipe and inject both ends into the tracee via
      * SECCOMP_IOCTL_NOTIF_ADDFD.  This makes pipes fully native:
      *
      *   - dup2/close/read/write on pipe FDs -> CONTINUE (host kernel)
@@ -3063,8 +3052,7 @@ static struct kbox_dispatch forward_getrandom(
     if (buflen == 0)
         return kbox_dispatch_value(0);
 
-    /*
-     * Read from /dev/urandom via LKL.  Fall back to host if LKL does not
+    /* Read from /dev/urandom via LKL.  Fall back to host if LKL does not
      * have the device available.
      */
     size_t max_chunk = 256;
@@ -3095,8 +3083,7 @@ static struct kbox_dispatch forward_getrandom(
 
 /* forward_syslog (klogctl). */
 
-/*
- * syslog(type, buf, len): forward to LKL so dmesg shows the LKL kernel's
+/* syslog(type, buf, len): forward to LKL so dmesg shows the LKL kernel's
  * ring buffer, not the host's.
  *
  * Types that read into buf (2=READ, 3=READ_ALL, 4=READ_CLEAR): call LKL
@@ -3133,8 +3120,7 @@ static struct kbox_dispatch forward_syslog(
     if (remote_buf == 0)
         return kbox_dispatch_errno(EFAULT);
 
-    /*
-     * Static buffer; safe because the supervisor is single-threaded.
+    /* Static buffer; safe because the supervisor is single-threaded.
      * Clamp to the actual LKL ring buffer size so READ_CLEAR never
      * discards data beyond what we can copy out.  The ring buffer size is
      * fixed at boot, so cache it after the first query.  Hard-cap at 1MB
@@ -3187,8 +3173,7 @@ static struct kbox_dispatch forward_prctl(
 {
     long option = to_c_long_arg(notif->data.args[0]);
 
-    /*
-     * Block PR_SET_DUMPABLE(0): clearing dumpability makes process_vm_readv
+    /* Block PR_SET_DUMPABLE(0): clearing dumpability makes process_vm_readv
      * fail, which would bypass clone3 namespace-flag sanitization (the
      * supervisor can't read clone_args.flags from a non-dumpable process).
      * Return success without actually clearing; the tracee thinks it
@@ -3200,8 +3185,7 @@ static struct kbox_dispatch forward_prctl(
     if (option == PR_GET_DUMPABLE)
         return kbox_dispatch_value(1);
 
-    /*
-     * Only forward PR_SET_NAME and PR_GET_NAME to LKL.  Everything else
+    /* Only forward PR_SET_NAME and PR_GET_NAME to LKL.  Everything else
      * passes through to the host kernel.
      *
      * PR_SET_NAME/PR_GET_NAME use a 16-byte name buffer.  The tracee
@@ -3701,8 +3685,7 @@ static struct kbox_dispatch forward_utimensat(
     pid_t pid = notif->pid;
     long dirfd_raw = to_dirfd_arg(notif->data.args[0]);
 
-    /*
-     * pathname can be NULL for utimensat (operates on dirfd itself).  In
+    /* pathname can be NULL for utimensat (operates on dirfd itself).  In
      * that case args[1] == 0.
      */
     char pathbuf[KBOX_MAX_PATH];
@@ -3785,8 +3768,7 @@ static struct kbox_dispatch forward_ioctl(
     long lkl_fd = kbox_fd_table_get_lkl(ctx->fd_table, fd);
 
     if (lkl_fd < 0) {
-        /*
-         * Host FD (stdin/stdout/stderr or pipe).  Most ioctls pass through
+        /* Host FD (stdin/stdout/stderr or pipe).  Most ioctls pass through
          * to the host kernel.  However, job-control ioctls (TIOCSPGRP/
          * TIOCGPGRP) fail with EPERM under seccomp-unotify because the
          * supervised child is not the session leader.  Return ENOTTY so
@@ -3799,8 +3781,7 @@ static struct kbox_dispatch forward_ioctl(
 
     (void) lkl_fd;
 
-    /*
-     * For virtual FDs backed by LKL, terminal ioctls return ENOTTY since
+    /* For virtual FDs backed by LKL, terminal ioctls return ENOTTY since
      * LKL file-backed FDs are not terminals.  Non-terminal ioctls also
      * return ENOTTY, matching regular-file semantics.
      */
@@ -3809,16 +3790,14 @@ static struct kbox_dispatch forward_ioctl(
 
 /* forward_mmap. */
 
-/*
- * mmap dispatch: the only case we intercept is a virtual FD with no host
+/* mmap dispatch: the only case we intercept is a virtual FD with no host
  * shadow.  Everything else (MAP_ANONYMOUS, shadow FDs, host FDs) passes
  * through to the host kernel via CONTINUE.
  */
 static struct kbox_dispatch forward_mmap(const struct kbox_seccomp_notif *notif,
                                          struct kbox_supervisor_ctx *ctx)
 {
-    /*
-     * mmap fd is a 32-bit int.  In seccomp_data.args[] it is zero-extended
+    /* mmap fd is a 32-bit int.  In seccomp_data.args[] it is zero-extended
      * to uint64_t, so -1 appears as 0xffffffff.  Use to_dirfd_arg to
      * properly sign-extend from 32 bits.
      */
@@ -3828,8 +3807,7 @@ static struct kbox_dispatch forward_mmap(const struct kbox_seccomp_notif *notif,
     if (fd == -1)
         return kbox_dispatch_continue();
 
-    /*
-     * If fd is a virtual FD (tracked in our table) and has no host shadow,
+    /* If fd is a virtual FD (tracked in our table) and has no host shadow,
      * the host kernel cannot resolve it.  Return ENODEV.  This covers both
      * high-range (>= KBOX_FD_BASE) and low-range (dup2 redirects) virtual
      * FDs.
@@ -3851,8 +3829,7 @@ static struct kbox_dispatch forward_mmap(const struct kbox_seccomp_notif *notif,
 /* In host+neither mode, CONTINUE to host kernel.                     */
 /* In image mode, forward to LKL.                                     */
 
-/*
- * Macro to reduce repetition in the identity dispatch.  For a given identity
+/* Macro to reduce repetition in the identity dispatch.  For a given identity
  * syscall, check the mode and route accordingly.
  *
  * GET_ID: host+root -> override(0), host+!root+override ->
@@ -3900,8 +3877,7 @@ static struct kbox_dispatch forward_mmap(const struct kbox_seccomp_notif *notif,
  */
 #define KBOX_AT_EMPTY_PATH 0x1000
 
-/*
- * Handle execve/execveat from inside the image.
+/* Handle execve/execveat from inside the image.
  *
  * For fexecve (execveat with AT_EMPTY_PATH on a host memfd): CONTINUE,
  * the host kernel handles it directly.  This is the initial exec path
@@ -3927,8 +3903,7 @@ static struct kbox_dispatch forward_execve(
 {
     pid_t pid = notif->pid;
 
-    /*
-     * Detect fexecve: execveat(fd, "", argv, envp, AT_EMPTY_PATH).  This
+    /* Detect fexecve: execveat(fd, "", argv, envp, AT_EMPTY_PATH).  This
      * is the initial exec from image.c on the host memfd.  Let the kernel
      * handle it directly.
      */
@@ -3970,8 +3945,7 @@ static struct kbox_dispatch forward_execve(
     if (exec_memfd < 0)
         return kbox_dispatch_errno(-exec_memfd);
 
-    /*
-     * Check for PT_INTERP (dynamic binary).  Read the first 4 KB; enough
+    /* Check for PT_INTERP (dynamic binary).  Read the first 4 KB; enough
      * for any reasonable ELF header plus the full program header table.
      */
     {
@@ -4010,8 +3984,7 @@ static struct kbox_dispatch forward_execve(
                     return kbox_dispatch_errno(-interp_memfd);
                 }
 
-                /*
-                 * Inject the interpreter memfd first so we know its FD
+                /* Inject the interpreter memfd first so we know its FD
                  * number in the tracee for the PT_INTERP patch.  O_CLOEXEC
                  * is safe: the kernel resolves /proc/self/fd/N via
                  * open_exec() before begin_new_exec() closes CLOEXEC
@@ -4060,8 +4033,7 @@ static struct kbox_dispatch forward_execve(
         }
     }
 
-    /*
-     * Inject the exec memfd into the tracee.  O_CLOEXEC keeps the tracee's
+    /* Inject the exec memfd into the tracee.  O_CLOEXEC keeps the tracee's
      * FD table clean after exec succeeds.
      */
     int tracee_exec_fd =
@@ -4071,8 +4043,7 @@ static struct kbox_dispatch forward_execve(
     if (tracee_exec_fd < 0)
         return kbox_dispatch_errno(-tracee_exec_fd);
 
-    /*
-     * Overwrite the pathname in the tracee's memory with /proc/self/fd/<N>.
+    /* Overwrite the pathname in the tracee's memory with /proc/self/fd/<N>.
      * The kernel has not yet copied the pathname (getname happens after
      * the seccomp check), so when we CONTINUE, it reads our rewritten
      * path.
@@ -4587,8 +4558,7 @@ struct kbox_dispatch kbox_dispatch_syscall(struct kbox_supervisor_ctx *ctx,
         return kbox_dispatch_continue(); /* alarm (not on aarch64) */
 
     /* Signal delivery (dispatch: PID validation). */
-    /*
-     * kill/tgkill/tkill must go through dispatch (not BPF deny) because ash
+    /* kill/tgkill/tkill must go through dispatch (not BPF deny) because ash
      * needs them for job control. We validate the target PID belongs to the
      * guest process tree.  PID is in register args (no TOCTOU).
      */

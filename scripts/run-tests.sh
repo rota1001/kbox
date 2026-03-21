@@ -35,7 +35,8 @@ else
     NC=''
 fi
 
-die() {
+die()
+{
     echo "error: $*" >&2
     exit 1
 }
@@ -43,7 +44,8 @@ die() {
 [ -x "$KBOX" ] || die "kbox binary not found at ${KBOX}"
 [ -f "$ROOTFS" ] || die "rootfs image not found at ${ROOTFS}"
 
-expect_success() {
+expect_success()
+{
     name="$1"
     shift
     printf "  %-40s " "$name"
@@ -59,7 +61,8 @@ expect_success() {
     rm -f "$OUTPUT"
 }
 
-expect_output() {
+expect_output()
+{
     name="$1"
     expected="$2"
     shift 2

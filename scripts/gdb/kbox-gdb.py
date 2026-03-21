@@ -86,7 +86,9 @@ class KboxFdTable(gdb.Command):
                 mirror_tty = int(entry["mirror_tty"])
                 cloexec = int(entry["cloexec"])
                 host_str = str(host_fd) if host_fd >= 0 else "-"
-                print(f"{i:>8}  {lkl_fd:>8}  {host_str:>8}  {mirror_tty:>4}  {cloexec:>7}")
+                print(
+                    f"{i:>8}  {lkl_fd:>8}  {host_str:>8}  {mirror_tty:>4}  {cloexec:>7}"
+                )
                 count += 1
         except gdb.error:
             pass
@@ -102,7 +104,9 @@ class KboxFdTable(gdb.Command):
             mirror_tty = int(entry["mirror_tty"])
             cloexec = int(entry["cloexec"])
             host_str = str(host_fd) if host_fd >= 0 else "-"
-            print(f"{vfd:>8}  {lkl_fd:>8}  {host_str:>8}  {mirror_tty:>4}  {cloexec:>7}")
+            print(
+                f"{vfd:>8}  {lkl_fd:>8}  {host_str:>8}  {mirror_tty:>4}  {cloexec:>7}"
+            )
             count += 1
 
         print(f"\n{count} active entries")
@@ -135,7 +139,9 @@ class KboxBreakSyscall(gdb.Command):
 
         bp = gdb.Breakpoint("kbox_dispatch_syscall")
         bp.condition = f"nr == {nr}"
-        print(f"Breakpoint {bp.number} at kbox_dispatch_syscall (condition: nr == {nr})")
+        print(
+            f"Breakpoint {bp.number} at kbox_dispatch_syscall (condition: nr == {nr})"
+        )
 
 
 class KboxCtx(gdb.Command):
@@ -201,21 +207,69 @@ class KboxCtx(gdb.Command):
 
 # Host NR field names in kbox_host_nrs, used for reverse lookup.
 _HOST_NR_FIELDS = [
-    "openat", "openat2", "open", "stat", "lstat", "access",
-    "rename", "mkdir", "rmdir", "unlink", "chmod", "chown",
-    "fstat", "newfstatat", "statx", "faccessat2",
-    "getdents64", "getdents", "mkdirat", "unlinkat", "renameat2",
-    "fchmodat", "fchownat", "close",
-    "sendmsg", "socket", "connect", "bind", "listen", "accept", "accept4",
-    "exit", "exit_group", "fcntl", "dup", "dup2", "dup3",
-    "read", "write", "pread64", "lseek",
-    "chdir", "fchdir", "getcwd",
-    "getuid", "geteuid", "getresuid",
-    "getgid", "getegid", "getresgid",
-    "setuid", "setreuid", "setresuid",
-    "setgid", "setregid", "setresgid",
-    "getgroups", "setgroups", "setfsgid",
-    "mount", "umount2", "execve", "execveat",
+    "openat",
+    "openat2",
+    "open",
+    "stat",
+    "lstat",
+    "access",
+    "rename",
+    "mkdir",
+    "rmdir",
+    "unlink",
+    "chmod",
+    "chown",
+    "fstat",
+    "newfstatat",
+    "statx",
+    "faccessat2",
+    "getdents64",
+    "getdents",
+    "mkdirat",
+    "unlinkat",
+    "renameat2",
+    "fchmodat",
+    "fchownat",
+    "close",
+    "sendmsg",
+    "socket",
+    "connect",
+    "bind",
+    "listen",
+    "accept",
+    "accept4",
+    "exit",
+    "exit_group",
+    "fcntl",
+    "dup",
+    "dup2",
+    "dup3",
+    "read",
+    "write",
+    "pread64",
+    "lseek",
+    "chdir",
+    "fchdir",
+    "getcwd",
+    "getuid",
+    "geteuid",
+    "getresuid",
+    "getgid",
+    "getegid",
+    "getresgid",
+    "setuid",
+    "setreuid",
+    "setresuid",
+    "setgid",
+    "setregid",
+    "setresgid",
+    "getgroups",
+    "setgroups",
+    "setfsgid",
+    "mount",
+    "umount2",
+    "execve",
+    "execveat",
 ]
 
 
@@ -281,9 +335,7 @@ class KboxSyscallTrace(gdb.Command):
             return
 
         bp_dispatch.commands = (
-            "silent\n"
-            "python KboxSyscallTrace._on_dispatch()\n"
-            "continue"
+            "silent\n" "python KboxSyscallTrace._on_dispatch()\n" "continue"
         )
 
         # Breakpoint on lkl_syscall -- the single entry point into the
@@ -296,9 +348,7 @@ class KboxSyscallTrace(gdb.Command):
             return
 
         bp_lkl.commands = (
-            "silent\n"
-            "python KboxSyscallTrace._on_lkl_entry()\n"
-            "continue"
+            "silent\n" "python KboxSyscallTrace._on_lkl_entry()\n" "continue"
         )
 
         # Finish breakpoint on lkl_syscall to capture the return value.
@@ -312,9 +362,7 @@ class KboxSyscallTrace(gdb.Command):
 
         if bp_lkl6:
             bp_lkl6.commands = (
-                "silent\n"
-                "python KboxSyscallTrace._on_lkl6_entry()\n"
-                "continue"
+                "silent\n" "python KboxSyscallTrace._on_lkl6_entry()\n" "continue"
             )
 
         print(f"Syscall trace active:")
@@ -388,7 +436,7 @@ class KboxSyscallTrace(gdb.Command):
         except gdb.error:
             fd_base = 32768
 
-        a0 = int(args[0]) & 0xffffffffffffffff
+        a0 = int(args[0]) & 0xFFFFFFFFFFFFFFFF
         # Signed interpretation for AT_FDCWD check.
         a0_signed = int(args[0])
         if a0_signed != -100 and a0 >= fd_base and a0 < fd_base + 4096:
@@ -480,9 +528,7 @@ class KboxVfsPath(gdb.Command):
     """
 
     def __init__(self):
-        super().__init__(
-            "kbox-vfs-path", gdb.COMMAND_DATA, gdb.COMPLETE_FILENAME
-        )
+        super().__init__("kbox-vfs-path", gdb.COMMAND_DATA, gdb.COMPLETE_FILENAME)
 
     @staticmethod
     def _normalize_join(base, path):
@@ -544,7 +590,7 @@ class KboxVfsPath(gdb.Command):
         """Check if path equals prefix or starts with prefix + '/'."""
         if not path.startswith(prefix):
             return False
-        rest = path[len(prefix):]
+        rest = path[len(prefix) :]
         return rest == "" or rest.startswith("/")
 
     def invoke(self, arg, from_tty):
@@ -639,7 +685,7 @@ class KboxVfsPath(gdb.Command):
         # Escape check.
         if self._is_prefix_dir(resolved, host_root) or resolved == host_root:
             # Strip host_root prefix to get guest-relative path.
-            tail = resolved[len(host_root):]
+            tail = resolved[len(host_root) :]
             if tail == "":
                 guest_resolved = "/"
             elif tail.startswith("/"):
@@ -675,9 +721,7 @@ class KboxTaskWalk(gdb.Command):
     """
 
     def __init__(self):
-        super().__init__(
-            "kbox-task-walk", gdb.COMMAND_DATA, gdb.COMPLETE_EXPRESSION
-        )
+        super().__init__("kbox-task-walk", gdb.COMMAND_DATA, gdb.COMPLETE_EXPRESSION)
 
     @staticmethod
     def _container_of(list_ptr, struct_type, member_name):
@@ -692,9 +736,7 @@ class KboxTaskWalk(gdb.Command):
         member_offset = 0
         try:
             # Use GDB to compute the offset.
-            offset_expr = (
-                f"(unsigned long)&((({struct_type} *)0)->{member_name})"
-            )
+            offset_expr = f"(unsigned long)&((({struct_type} *)0)->{member_name})"
             member_offset = int(gdb.parse_and_eval(offset_expr))
         except gdb.error:
             # Manual fallback: iterate fields.
@@ -818,9 +860,7 @@ class KboxTaskWalk(gdb.Command):
                     if pid == 1:
                         tracee_str = f"<-> {child_pid} (tracee)"
 
-                print(
-                    f"{pid:>6}  {state_str:>16}  {comm:>16}  {tracee_str:>10}"
-                )
+                print(f"{pid:>6}  {state_str:>16}  {comm:>16}  {tracee_str:>10}")
                 count += 1
 
                 # Follow tasks.next to the next task.
@@ -833,9 +873,7 @@ class KboxTaskWalk(gdb.Command):
                     break
 
                 # container_of(next_list, struct task_struct, tasks)
-                current = self._container_of(
-                    next_list, "struct task_struct", "tasks"
-                )
+                current = self._container_of(next_list, "struct task_struct", "tasks")
                 if current is None:
                     print("[error] container_of failed during traversal")
                     break
@@ -867,9 +905,7 @@ class KboxMemCheck(gdb.Command):
     MAX_ORDER = 11
 
     def __init__(self):
-        super().__init__(
-            "kbox-mem-check", gdb.COMMAND_DATA, gdb.COMPLETE_NONE
-        )
+        super().__init__("kbox-mem-check", gdb.COMMAND_DATA, gdb.COMPLETE_NONE)
 
     @staticmethod
     def _read_list_len(head_addr, max_count=4096):
@@ -973,16 +1009,15 @@ class KboxMemCheck(gdb.Command):
                     pages = nr_free * (1 << order)
                     zone_free += pages
                     block_kb = (1 << order) * 4  # Assume 4KB pages.
-                    print(
-                        f"  {order:>6}  {nr_free:>12}  "
-                        f"{block_kb:>8} KB"
-                    )
+                    print(f"  {order:>6}  {nr_free:>12}  " f"{block_kb:>8} KB")
 
                 total_free_pages += zone_free
                 print(f"  zone total: {zone_free} pages ({zone_free * 4} KB)")
 
-            print(f"\n  buddy total free: {total_free_pages} pages "
-                  f"({total_free_pages * 4} KB)")
+            print(
+                f"\n  buddy total free: {total_free_pages} pages "
+                f"({total_free_pages * 4} KB)"
+            )
 
         # ---------------------------------------------------------- #
         # Slab allocator -- slab_caches list                          #
@@ -1026,18 +1061,14 @@ class KboxMemCheck(gdb.Command):
                     max_caches = 512  # Safety limit.
 
                     try:
-                        list_head_type = gdb.lookup_type(
-                            "struct list_head"
-                        ).pointer()
+                        list_head_type = gdb.lookup_type("struct list_head").pointer()
                         ptr = int(slab_caches["next"])
 
                         while ptr != head_addr and cache_count < max_caches:
                             # container_of: ptr points to
                             # kmem_cache.list, subtract offset.
                             cache_addr = ptr - list_offset
-                            cache_ptr = gdb.Value(cache_addr).cast(
-                                cache_type.pointer()
-                            )
+                            cache_ptr = gdb.Value(cache_addr).cast(cache_type.pointer())
                             cache = cache_ptr.dereference()
 
                             # Read cache fields.
@@ -1061,15 +1092,10 @@ class KboxMemCheck(gdb.Command):
                             except gdb.error:
                                 size = -1
 
-                            obj_str = (
-                                f"{obj_size}" if obj_size >= 0 else "?"
-                            )
+                            obj_str = f"{obj_size}" if obj_size >= 0 else "?"
                             size_str = f"{size}" if size >= 0 else "?"
 
-                            print(
-                                f"  {cname:>24}  {obj_str:>10}  "
-                                f"{size_str:>10}"
-                            )
+                            print(f"  {cname:>24}  {obj_str:>10}  " f"{size_str:>10}")
                             cache_count += 1
 
                             # Follow list.next.
@@ -1120,8 +1146,7 @@ class KboxMemCheck(gdb.Command):
             # Without totalram_pages, report what we can.
             if total_free_pages > 0:
                 print(
-                    f"  free pages: {total_free_pages} "
-                    f"({total_free_pages * 4} KB)"
+                    f"  free pages: {total_free_pages} " f"({total_free_pages * 4} KB)"
                 )
                 print(f"  totalram_pages not available for pressure calc")
             else:
@@ -1155,17 +1180,17 @@ class KboxLklLoad(gdb.Command):
     """
 
     def __init__(self):
-        super().__init__(
-            "kbox-lkl-load", gdb.COMMAND_DATA, gdb.COMPLETE_FILENAME
-        )
+        super().__init__("kbox-lkl-load", gdb.COMMAND_DATA, gdb.COMPLETE_FILENAME)
 
     def invoke(self, arg, from_tty):
         import os
         import sys
         import types
 
-        lkl_dir = arg.strip() if arg.strip() else os.environ.get(
-            "LKL_DIR", os.path.expanduser("~/TEMP/lkl")
+        lkl_dir = (
+            arg.strip()
+            if arg.strip()
+            else os.environ.get("LKL_DIR", os.path.expanduser("~/TEMP/lkl"))
         )
 
         gdb_scripts = os.path.join(lkl_dir, "scripts", "gdb")
@@ -1186,9 +1211,11 @@ class KboxLklLoad(gdb.Command):
         patched = []
         for line in lines:
             stripped = line.strip()
-            if ("gdb.parse_and_eval" in line
-                    and not stripped.startswith("#")
-                    and not stripped.startswith("if 0")):
+            if (
+                "gdb.parse_and_eval" in line
+                and not stripped.startswith("#")
+                and not stripped.startswith("if 0")
+            ):
                 indent = len(line) - len(line.lstrip())
                 sp = " " * indent
                 varname = stripped.split("=")[0].strip()

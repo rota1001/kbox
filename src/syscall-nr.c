@@ -523,8 +523,7 @@ const struct kbox_host_nrs HOST_NRS_AARCH64 = {
 };
 
 #ifndef KBOX_UNIT_TEST
-/*
- * LKL ARCH=lkl always uses the asm-generic ABI.  No runtime probing
+/* LKL ARCH=lkl always uses the asm-generic ABI.  No runtime probing
  * needed; the generic syscall table is the only one that applies.
  *
  * The old mkdir-based runtime probe is retained under KBOX_DEBUG_ABI_PROBE
@@ -580,8 +579,7 @@ const struct kbox_sysnrs *detect_sysnrs_probe(void)
 #endif /* KBOX_DEBUG_ABI_PROBE */
 #endif /* !KBOX_UNIT_TEST */
 
-/*
- * Map a host syscall number to its name for diagnostic output.
+/* Map a host syscall number to its name for diagnostic output.
  * Returns "unknown" if the number does not match any entry.
  */
 const char *syscall_name_from_nr(const struct kbox_host_nrs *h, int nr)

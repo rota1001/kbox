@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * Stress test: signal delivery during file I/O.
+/* Stress test: signal delivery during file I/O.
  * Installs a SIGALRM handler that fires every 10ms, then performs
  * file I/O operations continuously for 2 seconds.  Verifies that
  * I/O completes correctly despite signal interrupts (EINTR handling).
@@ -28,7 +27,7 @@
         }                                       \
     } while (0)
 
-static volatile sig_atomic_t signal_count = 0;
+static volatile sig_atomic_t signal_count;
 
 static void alarm_handler(int sig)
 {
@@ -36,8 +35,7 @@ static void alarm_handler(int sig)
     signal_count++;
 }
 
-/*
- * Write with EINTR retry.  Real programs must handle this, and
+/* Write with EINTR retry.  Real programs must handle this, and
  * the supervisor must not corrupt state when signals interrupt
  * a blocked LKL syscall.
  */
@@ -171,8 +169,7 @@ int main(void)
     CHECK(io_ops > 0, "should complete at least one I/O cycle");
     CHECK(signal_count > 0, "should have received at least one signal");
 
-    /*
-     * Allow a small number of transient errors (e.g., EINTR on open),
+    /* Allow a small number of transient errors (e.g., EINTR on open),
      * but the vast majority of operations should succeed.
      */
     if (io_ops > 0 && io_errors > io_ops / 2) {

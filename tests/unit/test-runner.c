@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * Minimal C test harness.  No external dependencies.
+/* Minimal C test harness.  No external dependencies.
  *
  * Each test file registers tests via TEST_REGISTER() in its
  * init function.  test-runner.c calls all init functions, then

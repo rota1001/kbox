@@ -181,7 +181,7 @@ static void test_fd_table_find_by_host_fd(void)
     kbox_fd_table_set_host_fd(&t, vfd2, 77);
 
     ASSERT_EQ(kbox_fd_table_find_by_host_fd(&t, 77), vfd2);
-    /* vfd1 has no host_fd set -- should not match */
+    /* vfd1 has no host_fd set; should not match */
     ASSERT_EQ(kbox_fd_table_find_by_host_fd(&t, -1), -1);
 
     (void) vfd1;
@@ -203,7 +203,7 @@ static void test_fd_table_remove_resets_host_fd(void)
     kbox_fd_table_set_host_fd(&t, vfd, 88);
     ASSERT_EQ(kbox_fd_table_get_host_fd(&t, vfd), 88);
     kbox_fd_table_remove(&t, vfd);
-    /* After removal, slot is free -- get_host_fd returns -1. */
+    /* After removal, slot is free; get_host_fd returns -1. */
     ASSERT_EQ(kbox_fd_table_get_host_fd(&t, vfd), -1);
     /* Reverse lookup should also fail. */
     ASSERT_EQ(kbox_fd_table_find_by_host_fd(&t, 88), -1);

@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * Guest test: verify dup, dup2, dup3, and pipe semantics.
+/* Guest test: verify dup, dup2, dup3, and pipe semantics.
  * Compiled statically and placed in the rootfs.
  */
 #define _GNU_SOURCE

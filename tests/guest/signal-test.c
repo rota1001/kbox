@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * Guest test: basic signal handling via rt_sigaction.
+/* Guest test: basic signal handling via rt_sigaction.
  */
 #include <signal.h>
 #include <stdio.h>
@@ -15,7 +14,7 @@
         }                                       \
     } while (0)
 
-static volatile sig_atomic_t got_sigusr1 = 0;
+static volatile sig_atomic_t got_sigusr1;
 
 static void handler(int sig)
 {

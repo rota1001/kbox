@@ -12,7 +12,8 @@ BUSYBOX_VERSION="${BUSYBOX_VERSION:-1.36.1}"
 OUTDIR="deps"
 OUTFILE="${OUTDIR}/busybox"
 
-die() {
+die()
+{
     echo "error: $*" >&2
     exit 1
 }

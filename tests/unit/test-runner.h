@@ -6,8 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-/*
- * Shared test macros.  Included by test_runner.c which defines
+/* Shared test macros.  Included by test_runner.c which defines
  * the actual implementations; individual test files include
  * this header for the macros.
  */

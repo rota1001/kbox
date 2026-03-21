@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * web-telemetry.c - Telemetry sampler for the web observatory.
+/* web-telemetry.c - Telemetry sampler for the web observatory.
  *
  * Periodic timer reads LKL-internal /proc files:
  *   Tick (100ms): /proc/stat, /proc/meminfo, /proc/vmstat, /proc/loadavg
@@ -37,8 +36,7 @@ uint64_t kbox_clock_ns(void)
 
 /* LKL /proc reading. */
 
-/*
- * Read a small /proc file from LKL into buf.
+/* Read a small /proc file from LKL into buf.
  * Returns bytes read or 0 on failure.
  */
 static int read_lkl_proc(const struct kbox_sysnrs *s,
@@ -62,8 +60,7 @@ static int read_lkl_proc(const struct kbox_sysnrs *s,
 
 /* /proc parsers. */
 
-/*
- * Parse /proc/stat for context switch count and softirq totals.
+/* Parse /proc/stat for context switch count and softirq totals.
  */
 static void parse_proc_stat(const char *buf,
                             struct kbox_telemetry_snapshot *snap)
@@ -89,8 +86,7 @@ static void parse_proc_stat(const char *buf,
     }
 }
 
-/*
- * Parse /proc/meminfo for memory stats (kB values).
+/* Parse /proc/meminfo for memory stats (kB values).
  */
 static void parse_proc_meminfo(const char *buf,
                                struct kbox_telemetry_snapshot *snap)
@@ -122,8 +118,7 @@ static void parse_proc_meminfo(const char *buf,
         snap->slab = strtoull(p + 5, NULL, 10);
 }
 
-/*
- * Parse /proc/vmstat for page fault counters.
+/* Parse /proc/vmstat for page fault counters.
  */
 static void parse_proc_vmstat(const char *buf,
                               struct kbox_telemetry_snapshot *snap)
@@ -139,8 +134,7 @@ static void parse_proc_vmstat(const char *buf,
         snap->pgmajfault = strtoull(p + 11, NULL, 10);
 }
 
-/*
- * Parse /proc/loadavg.
+/* Parse /proc/loadavg.
  * Format: "0.01 0.05 0.00 1/42 123"
  * Store as fixed-point * 100.
  */
@@ -157,8 +151,7 @@ static void parse_proc_loadavg(const char *buf,
 
 /* Sampler tick. */
 
-/*
- * Per-tick time budget in nanoseconds (5ms).
+/* Per-tick time budget in nanoseconds (5ms).
  * If parsing exceeds this, skip remaining slow-tick files.
  */
 #define TICK_BUDGET_NS (5 * 1000000ULL)
@@ -265,8 +258,7 @@ int kbox_snapshot_to_json(const struct kbox_telemetry_snapshot *snap,
         snap->counters.latency_max_ns);
 }
 
-/*
- * Escape a string for safe JSON embedding.
+/* Escape a string for safe JSON embedding.
  * Handles: " \ and control characters (< 0x20).
  */
 static int escape_json_str(const char *src, char *dst, int dstsz)

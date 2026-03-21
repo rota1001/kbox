@@ -165,8 +165,7 @@ static void test_normalize_join_virtual_escape(void)
     ASSERT_TRUE(kbox_is_lkl_virtual_path(out));
 }
 
-/*
- * Verify that normalize_virtual_relative + normalize_join catches
+/* Verify that normalize_virtual_relative + normalize_join catches
  * the relative path escape variant: "proc/../etc/passwd".
  */
 static void test_normalize_virtual_relative_escape(void)
@@ -206,8 +205,7 @@ static void test_normalize_virtual_relative_escape(void)
     ASSERT_TRUE(kbox_is_lkl_virtual_path(norm));
 }
 
-/*
- * Additional edge cases: deeper escapes, dots within virtual, double slashes,
+/* Additional edge cases: deeper escapes, dots within virtual, double slashes,
  * false virtual prefixes, empty/root paths.
  */
 static void test_normalize_edge_cases(void)

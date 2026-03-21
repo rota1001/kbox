@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * Guest test: verify DNS resolution through SLIRP using direct UDP queries.
+/* Guest test: verify DNS resolution through SLIRP using direct UDP queries.
  */
 #include <arpa/inet.h>
 #include <poll.h>

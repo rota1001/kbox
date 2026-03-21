@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * Stress test: concurrent file I/O from multiple threads.
+/* Stress test: concurrent file I/O from multiple threads.
  * Creates 4 threads, each creating a file, writing a pattern, reading it
  * back, and verifying data integrity.
  *
@@ -39,8 +38,7 @@ static void *worker(void *arg)
     snprintf(path, sizeof(path), "/tmp/cio_thread_%d", res->thread_id);
 
     for (iter = 0; iter < ITERATIONS; iter++) {
-        /*
-         * Fill write buffer with a pattern unique to this thread
+        /* Fill write buffer with a pattern unique to this thread
          * and iteration, so cross-thread corruption is detectable.
          */
         unsigned char seed = (unsigned char) (res->thread_id * 37 + iter);

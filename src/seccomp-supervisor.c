@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * seccomp-supervisor.c - Fork, install seccomp, exec, supervise.
+/* seccomp-supervisor.c - Fork, install seccomp, exec, supervise.
  *
  * The supervisor creates a socketpair, forks a child process, installs
  * a seccomp-unotify BPF filter in the child, sends the listener FD
@@ -30,15 +29,13 @@
 #include "web.h"
 #endif
 
-/*
- * Notification types (kbox_seccomp_notif etc.) are provided by
+/* Notification types (kbox_seccomp_notif etc.) are provided by
  * seccomp-defs.h via seccomp.h.
  */
 
 /* SCM_RIGHTS helpers. */
 
-/*
- * Create a UNIX socketpair.
+/* Create a UNIX socketpair.
  * On success fds[0] and fds[1] are filled; returns 0.
  * On failure returns -1 with a message on stderr.
  */
@@ -51,8 +48,7 @@ static int socketpair_create(int fds[2])
     return 0;
 }
 
-/*
- * Send a single file descriptor over a UNIX socket using SCM_RIGHTS.
+/* Send a single file descriptor over a UNIX socket using SCM_RIGHTS.
  */
 static int send_fd(int sock, int fd)
 {
@@ -62,8 +58,7 @@ static int send_fd(int sock, int fd)
         .iov_len = 1,
     };
 
-    /*
-     * Ancillary data buffer.  CMSG_SPACE gives the padded size
+    /* Ancillary data buffer.  CMSG_SPACE gives the padded size
      * needed to carry one int.
      */
     union {
@@ -101,8 +96,7 @@ static int send_fd(int sock, int fd)
     return 0;
 }
 
-/*
- * Receive a single file descriptor from a UNIX socket via SCM_RIGHTS.
+/* Receive a single file descriptor from a UNIX socket via SCM_RIGHTS.
  * Returns the received FD on success, -1 on error.
  */
 static int recv_fd(int sock)
@@ -181,8 +175,7 @@ static void build_response(struct kbox_seccomp_notif_resp *resp,
     case KBOX_DISPATCH_RETURN:
         resp->flags = 0;
         resp->val = d->val;
-        /*
-         * seccomp_notif_resp.error is a negative errno value.
+        /* seccomp_notif_resp.error is a negative errno value.
          * The kernel negates it to produce the tracee's errno:
          *   error = -ENOENT (-2)  =>  tracee errno = 2 (ENOENT)
          * kbox_dispatch_errno stores positive values, so negate here.
@@ -194,8 +187,7 @@ static void build_response(struct kbox_seccomp_notif_resp *resp,
 
 /* Child wait helper. */
 
-/*
- * Check child status via non-blocking waitpid.
+/* Check child status via non-blocking waitpid.
  * Returns:
  *   1  if child exited; *exit_code is filled with the exit status.
  *   0  if child is still running.
@@ -225,8 +217,7 @@ static int check_child(pid_t pid, int *exit_code)
 
 /* Supervisor loop. */
 
-/*
- * Sit in a poll loop:
+/* Sit in a poll loop:
  *   1. Non-blocking waitpid to see if child exited.
  *   2. poll(listener_fd, POLLIN, 100ms).
  *   3. On POLLHUP/POLLERR, recheck child.
@@ -336,8 +327,7 @@ static int supervise_loop(struct kbox_supervisor_ctx *ctx)
 
         if (ret < 0) {
             int e = -ret;
-            /*
-             * ENOENT: tracee died between recv and send.
+            /* ENOENT: tracee died between recv and send.
              * EBADF: notification ID invalidated (thread exit
              *        in a multi-threaded guest).
              * Both are harmless; loop around, waitpid picks
@@ -402,8 +392,7 @@ int kbox_run_supervisor(const struct kbox_sysnrs *sysnrs,
         /* Child process. */
         close(sp[0]);
 
-        /*
-         * Raise RLIMIT_NOFILE so the host kernel allows FD numbers
+        /* Raise RLIMIT_NOFILE so the host kernel allows FD numbers
          * above the default limit (typically 1024).  The guest shell
          * (busybox ash) saves/restores FDs via fcntl(F_DUPFD, minfd)
          * where minfd can be above 4096 when virtual FDs are in use.
@@ -416,8 +405,7 @@ int kbox_run_supervisor(const struct kbox_sysnrs *sysnrs,
             setrlimit(RLIMIT_NOFILE, &rl);
         }
 
-        /*
-         * Prevent RT scheduling starvation: cap RLIMIT_RTPRIO to 0
+        /* Prevent RT scheduling starvation: cap RLIMIT_RTPRIO to 0
          * so sched_setscheduler(SCHED_FIFO/RR) fails with EPERM.
          * This makes sched_* CONTINUE entries safe.
          */
@@ -433,8 +421,7 @@ int kbox_run_supervisor(const struct kbox_sysnrs *sysnrs,
             _exit(127);
         }
 
-        /*
-         * Drop all ambient capabilities and clear the bounding set.
+        /* Drop all ambient capabilities and clear the bounding set.
          * This limits what the child can do even if it somehow
          * gains privileges.  Errors are ignored: a given cap number
          * may not exist on this kernel.
@@ -460,8 +447,7 @@ int kbox_run_supervisor(const struct kbox_sysnrs *sysnrs,
         close(sp[1]);
         close(listener_fd);
 
-        /*
-         * 3e. Build argv and exec.
+        /* 3e. Build argv and exec.
          *
          * argv[0] = command, then args[0..nargs], then NULL.
          *

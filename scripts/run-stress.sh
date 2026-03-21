@@ -39,7 +39,8 @@ else
     NC=''
 fi
 
-die() {
+die()
+{
     echo "error: $*" >&2
     exit 1
 }
@@ -56,7 +57,8 @@ else
     TIMEOUT_CMD=""
 fi
 
-run_stress_test() {
+run_stress_test()
+{
     name="$1"
     guest_path="$2"
     shift 2

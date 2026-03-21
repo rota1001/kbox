@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * Guest test: verify that errno is correctly propagated from LKL syscalls
+/* Guest test: verify that errno is correctly propagated from LKL syscalls
  * through the seccomp-unotify supervisor.
  */
 #include <errno.h>
@@ -45,8 +44,7 @@ int main(void)
     /* EISDIR: open directory for writing. */
     CHECK_ERRNO(open("/tmp", O_WRONLY), EISDIR);
 
-    /*
-     * Write to read-only FD: skip in kbox.  Shadow FDs (memfds used for
+    /* Write to read-only FD: skip in kbox.  Shadow FDs (memfds used for
      * O_RDONLY regular files to enable mmap) are host-side read-write,
      * so write() succeeds on the host kernel despite O_RDONLY open flags.
      * This is a known shadow FD limitation, not an errno propagation bug.

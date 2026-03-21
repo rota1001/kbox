@@ -15,6 +15,7 @@ import os
 
 # Stub gdb module so kbox-gdb.py can be imported without GDB.
 import types
+
 gdb_stub = types.ModuleType("gdb")
 gdb_stub.COMMAND_DATA = 0
 gdb_stub.COMMAND_BREAKPOINTS = 1
@@ -23,13 +24,19 @@ gdb_stub.COMPLETE_NONE = 0
 gdb_stub.COMPLETE_FILENAME = 0
 gdb_stub.TYPE_CODE_PTR = 0
 
+
 class StubCommand:
     def __init__(self, *args, **kwargs):
         pass
+
+
 gdb_stub.Command = StubCommand
+
 
 class StubValue:
     pass
+
+
 gdb_stub.Value = StubValue
 gdb_stub.error = Exception
 gdb_stub.parse_and_eval = lambda x: None
@@ -42,6 +49,7 @@ sys.path.insert(0, script_dir)
 
 # Use importlib to load the module despite the hyphen in the filename.
 import importlib.util
+
 spec = importlib.util.spec_from_file_location(
     "kbox_gdb", os.path.join(script_dir, "kbox-gdb.py")
 )
@@ -56,6 +64,7 @@ is_prefix_dir = kbox_gdb.KboxVfsPath._is_prefix_dir
 
 passed = 0
 failed = 0
+
 
 def check(name, got, expected):
     global passed, failed
@@ -99,9 +108,7 @@ check("trailing_slash", normalize_join("/base", "/path/"), "/path")
 check("double_slash", normalize_join("/base", "/path//to///file"), "/path/to/file")
 
 # Complex mixed.
-check("complex_mixed",
-      normalize_join("/base", "/a/b/../c/./d/../e"),
-      "/a/c/e")
+check("complex_mixed", normalize_join("/base", "/a/b/../c/./d/../e"), "/a/c/e")
 
 # The escape cases from the C tests:
 
@@ -163,12 +170,14 @@ check("prefix_no", is_prefix_dir("/processor", "/proc"), False)
 check("prefix_root", is_prefix_dir("/", "/"), True)
 
 # Host-mode escape boundary: /var/lib/container_escape vs /var/lib/container
-check("prefix_escape",
-      is_prefix_dir("/var/lib/container_escape", "/var/lib/container"),
-      False)
-check("prefix_valid",
-      is_prefix_dir("/var/lib/container/file", "/var/lib/container"),
-      True)
+check(
+    "prefix_escape",
+    is_prefix_dir("/var/lib/container_escape", "/var/lib/container"),
+    False,
+)
+check(
+    "prefix_valid", is_prefix_dir("/var/lib/container/file", "/var/lib/container"), True
+)
 
 # ---- is_loader_runtime tests ----
 

@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * Stress test: exercise all MVP syscalls in a loop for a configurable
+/* Stress test: exercise all MVP syscalls in a loop for a configurable
  * duration (default 10 seconds).  Each iteration performs:
  *   open, write, read, stat, readdir, mkdir, rmdir, chdir, getcwd,
  *   getpid, clock_gettime, pipe, close
@@ -84,7 +83,7 @@ static int run_one_iteration(int iter)
     DIR *d = opendir(dir_path);
     if (!d)
         return -9;
-    /* Just read entries -- empty dir has . and .. */
+    /* Just read entries; empty dir has . and .. */
     struct dirent *ent;
     int entry_count = 0;
     while ((ent = readdir(d)) != NULL)
@@ -114,7 +113,7 @@ static int run_one_iteration(int iter)
     if (chdir(saved_cwd) != 0)
         return -16;
 
-    /* getpid -- should return a positive value. */
+    /* getpid: should return a positive value. */
     pid_t pid = getpid();
     if (pid <= 0)
         return -17;

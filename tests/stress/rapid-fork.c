@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * Stress test: fork many short-lived child processes in sequence.
+/* Stress test: fork many short-lived child processes in sequence.
  * Verifies no zombie accumulation, correct wait semantics, and no
  * supervisor resource leaks across 100 fork/exit cycles.
  *
@@ -75,8 +74,7 @@ int main(void)
 
     long elapsed_ms = timespec_diff_ms(&t_start, &t_end);
 
-    /*
-     * Verify no zombies remain.  Try waitpid with WNOHANG -- should
+    /* Verify no zombies remain.  Try waitpid with WNOHANG -- should
      * return 0 (no children) or -1 with ECHILD.
      */
     int status;

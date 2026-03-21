@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: MIT */
-/*
- * shadow-fd.c - Create host-visible memfd shadows of LKL files.
+/* shadow-fd.c - Create host-visible memfd shadows of LKL files.
  *
  * When the guest opens a regular file O_RDONLY, we create a memfd
  * containing the file's contents and inject it into the tracee.
@@ -23,8 +22,7 @@
 
 int kbox_shadow_create(const struct kbox_sysnrs *s, long lkl_fd)
 {
-    /*
-     * Use kbox_lkl_stat (generic-arch layout) instead of struct stat
+    /* Use kbox_lkl_stat (generic-arch layout) instead of struct stat
      * (x86_64 layout).  LKL always fills the buffer in generic-arch
      * format regardless of the host architecture.
      */
@@ -55,8 +53,7 @@ int kbox_shadow_create(const struct kbox_sysnrs *s, long lkl_fd)
         return -e;
     }
 
-    /*
-     * Read from LKL in chunks via pread64 (position-independent)
+    /* Read from LKL in chunks via pread64 (position-independent)
      * and write to the memfd.
      */
     long off = 0;

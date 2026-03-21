@@ -13,7 +13,10 @@ REPO="${MINISLIRP_REPO:-https://github.com/sysprog21/minislirp}"
 
 # Validate SLIRP_DIR to prevent rm -rf on unintended paths.
 case "$SLIRP_DIR" in
-    /*|""|.|..|*/..*) echo "error: SLIRP_DIR must be a relative sub-path without .." >&2; exit 1 ;;
+    /* | "" | . | .. | */..*)
+        echo "error: SLIRP_DIR must be a relative sub-path without .." >&2
+        exit 1
+        ;;
 esac
 
 if [ -f "${SLIRP_DIR}/src/libslirp.h" ]; then

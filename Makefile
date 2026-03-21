@@ -27,6 +27,10 @@ LKL_LIB   = $(LKL_DIR)/liblkl.a
 LDFLAGS += -L$(LKL_DIR) -L$(LKL_DIR)/lib
 LDLIBS   = -llkl -lpthread -ldl -lm -lrt
 
+ifeq ($(ARCH),riscv64)
+	LDFLAGS += -Wl,--no-relax
+endif
+
 # Optional: SLIRP networking (set KBOX_HAS_SLIRP=1 to enable)
 ifdef KBOX_HAS_SLIRP
   SLIRP_DIR  = externals/minislirp

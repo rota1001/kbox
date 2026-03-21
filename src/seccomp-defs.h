@@ -28,6 +28,8 @@
 #define KBOX_AUDIT_ARCH_CURRENT 0xc000003eU
 #elif defined(__aarch64__)
 #define KBOX_AUDIT_ARCH_CURRENT 0xc00000b7U
+#elif defined(__riscv) && __riscv_xlen == 64
+#define KBOX_AUDIT_ARCH_CURRENT 0xc00000f3U
 #else
 #error "unsupported architecture"
 #endif
@@ -44,11 +46,16 @@ struct kbox_sock_fprog {
     struct kbox_sock_filter *filter;
 };
 
-#define KBOX_BPF_STMT(c, val) {(unsigned short) (c), 0, 0, (unsigned int) (val)}
+#define KBOX_BPF_STMT(c, val)                            \
+    {                                                    \
+        (unsigned short) (c), 0, 0, (unsigned int) (val) \
+    }
 
-#define KBOX_BPF_JUMP(c, val, t, f)                                  \
-    {(unsigned short) (c), (unsigned char) (t), (unsigned char) (f), \
-     (unsigned int) (val)}
+#define KBOX_BPF_JUMP(c, val, t, f)                                     \
+    {                                                                   \
+        (unsigned short) (c), (unsigned char) (t), (unsigned char) (f), \
+            (unsigned int) (val)                                        \
+    }
 
 struct kbox_seccomp_notif {
     uint64_t id;

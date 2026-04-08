@@ -118,7 +118,7 @@
     X(rt_sigprocmask)          \
     X(rt_sigreturn)            \
     X(rt_sigpending)           \
-    X(rt_sigaltstack)          \
+    X(sigaltstack)             \
     X(kill)                    \
     X(tgkill)                  \
     X(tkill)                   \

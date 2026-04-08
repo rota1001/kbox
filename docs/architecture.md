@@ -36,7 +36,7 @@ Every intercepted syscall is dispatched to one of three dispositions:
   returns CONTINUE directly without touching the service thread for
   about 40 entries: brk, futex, rseq, set_tid_address, set_robust_list,
   munmap, mremap, membarrier, madvise, wait4, waitid, exit, exit_group,
-  rt_sigreturn, rt_sigaltstack, setitimer/getitimer, setpgid/getpgid,
+  rt_sigreturn, sigaltstack, setitimer/getitimer, setpgid/getpgid,
   getsid/setsid, fork, vfork, the full sched_* family, getrlimit,
   getrusage, ppoll, pselect6, poll, nanosleep, clock_nanosleep, statfs,
   and sysinfo. `mmap`, `epoll_*`, and other syscalls that need W^X

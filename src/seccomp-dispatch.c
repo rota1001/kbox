@@ -3220,7 +3220,7 @@ int kbox_dispatch_try_local_fast_path(const struct kbox_host_nrs *h,
         nr == h->munmap || nr == h->mremap || nr == h->membarrier ||
         nr == h->madvise || nr == h->wait4 || nr == h->waitid ||
         nr == h->exit || nr == h->exit_group || nr == h->rt_sigreturn ||
-        nr == h->rt_sigaltstack || nr == h->setitimer || nr == h->getitimer ||
+        nr == h->sigaltstack || nr == h->setitimer || nr == h->getitimer ||
         nr == h->setpgid || nr == h->getpgid || nr == h->getsid ||
         nr == h->setsid || nr == h->fork || nr == h->vfork ||
         nr == h->sched_yield || nr == h->sched_setparam ||
@@ -4204,7 +4204,7 @@ static struct kbox_dispatch forward_chown_legacy(
 /* clang-format off */
 #define DISPATCH_CONTINUE_TABLE(_)                                             \
     _(setpgid) _(getpgid) _(getsid) _(setsid) _(brk) _(wait4) _(waitid)        \
-    _(exit) _(exit_group) _(rt_sigreturn) _(rt_sigaltstack) _(setitimer)       \
+    _(exit) _(exit_group) _(rt_sigreturn) _(sigaltstack) _(setitimer)       \
     _(getitimer) _(set_tid_address) _(set_robust_list) _(futex) _(rseq)        \
     _(fork) _(vfork) _(membarrier) _(madvise) _(getrlimit) _(getrusage)        \
     /* Scheduling. */                                                          \

@@ -1001,7 +1001,7 @@ static int host_syscall_requires_guest_thread(
 
     if (nr == h->execve || nr == h->execveat || nr == h->exit ||
         nr == h->exit_group || nr == h->rt_sigprocmask ||
-        nr == h->rt_sigaltstack || nr == h->clone3 || nr == h->clone ||
+        nr == h->sigaltstack || nr == h->clone3 || nr == h->clone ||
         nr == h->fork || nr == h->vfork) {
         return 1;
     }
